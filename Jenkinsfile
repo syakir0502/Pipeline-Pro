@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        ELLO
         BUILD_VERSION = '1.0.0' // Example build version
         TEST_SUMMARY = 'Total Tests: 20\nPassed: 20\nFailed: 0\nSkipped: 0\nExecution Time: 10 seconds'
         DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
