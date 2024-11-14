@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        BUILD_START_TIME = "${new Date()}"
+        BUILD_START_TIME = ''
         BUILD_END_TIME = ''
         BUILD_DURATION = ''
     }
@@ -65,29 +65,40 @@ pipeline {
     post {
         always {
             script {
-                // Calculate build duration
-                BUILD_END_TIME = "${new Date()}"
-                BUILD_DURATION = (BUILD_END_TIME.time - BUILD_START_TIME.time) / 1000
+                // Capture start and end times with formatted output
+                def startTime = new Date()
+                BUILD_START_TIME = startTime.format("yyyy-MM-dd HH:mm:ss")
+                
+                def endTime = new Date()
+                BUILD_END_TIME = endTime.format("yyyy-MM-dd HH:mm:ss")
+                
+                BUILD_DURATION = (endTime.time - startTime.time) / 1000
 
                 // Send email with build information
-                emailext(
-                    to: '2022853154@student.uitm.edu.my',
-                    subject: "Jenkins Build Status: ${currentBuild.currentResult}",
-                    body: """
-                    The Jenkins build has completed.
+                try {
+                    emailext(
+                        to: '2022853154@student.uitm.edu.my',
+                        subject: "Jenkins Build Status: ${currentBuild.currentResult}",
+                        body: """
+                        <h2>The Jenkins build has completed.</h2>
+                        <br/>
+                        <b>Build Details:</b>
+                        <pre>
+                        =====================
+                        Build Status: ${currentBuild.currentResult}
+                        Build Start Time: ${BUILD_START_TIME}
+                        Build End Time: ${BUILD_END_TIME}
+                        Build Duration: ${BUILD_DURATION} seconds
 
-                    Build Details:
-                    =====================
-                    Build Status: ${currentBuild.currentResult}
-                    Build Start Time: ${BUILD_START_TIME}
-                    Build End Time: ${BUILD_END_TIME}
-                    Build Duration: ${BUILD_DURATION} seconds
-
-                    Console Output:
-                    ${BUILD_URL}console
-                    """,
-                    mimeType: 'text/html'
-                )
+                        Console Output:
+                        <a href="${BUILD_URL}console">${BUILD_URL}console</a>
+                        </pre>
+                        """,
+                        mimeType: 'text/html'
+                    )
+                } catch (Exception e) {
+                    echo "Error sending email: ${e.message}"
+                }
             }
         }
     }
