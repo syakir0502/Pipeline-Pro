@@ -82,7 +82,7 @@ pipeline {
                 // Send email with the build summary
                 try {
                     emailext(
-                        to: 'your-email@example.com',  // Replace with recipient's email
+                        to: '2022853154@student.uitm.edu.my',  // Replace with recipient's email
                         subject: "Jenkins Build Report: ${currentBuild.fullDisplayName}",
                         body: """
                         <h2>Jenkins Build Report</h2>
