@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        BUILD_VERSION = ''
-        TEST_SUMMARY = ''
-        DEPLOYMENT_STATUS = ''
+        BUILD_VERSION = '1.0.0' // Example build version
+        TEST_SUMMARY = 'Total Tests: 20\nPassed: 20\nFailed: 0\nSkipped: 0\nExecution Time: 10 seconds'
+        DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
         FINAL_REPORT = ''
     }
 
@@ -13,9 +13,10 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    // Set a dummy checkout message
+                    // Dummy checkout message
                     env.CHECKOUT_MESSAGE = 'Code checked out successfully'
                 }
+                echo "${env.CHECKOUT_MESSAGE}"
             }
         }
 
@@ -23,9 +24,16 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 script {
-                    env.BUILD_VERSION = '1.0.0' // Example build version
+                    env.BUILD_VERSION = '1.0.0'
+                    echo """
+                    Build Information:
+                    -------------------
+                    Build Version: ${env.BUILD_VERSION}
+                    Build Status: Successful
+                    Commit ID: abc123def456
+                    Build Time: 15 seconds
+                    """
                 }
-                echo "Build Version: ${env.BUILD_VERSION}"
             }
         }
 
@@ -33,9 +41,15 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    env.TEST_SUMMARY = 'All tests passed' // Example test summary
+                    env.TEST_SUMMARY = """
+                    Total Tests: 20
+                    Passed: 20
+                    Failed: 0
+                    Skipped: 0
+                    Execution Time: 10 seconds
+                    """
                 }
-                echo "Test Summary: ${env.TEST_SUMMARY}"
+                echo "Test Summary:\n${env.TEST_SUMMARY}"
             }
         }
 
@@ -43,9 +57,14 @@ pipeline {
             steps {
                 echo 'Deploying application...'
                 script {
-                    env.DEPLOYMENT_STATUS = 'Deployment successful to staging' // Example deployment message
+                    env.DEPLOYMENT_STATUS = """
+                    Environment: Staging
+                    Deployment Status: Successful
+                    Deployment Time: 5 seconds
+                    Deployed By: Jenkins Pipeline
+                    """
                 }
-                echo "Deployment Status: ${env.DEPLOYMENT_STATUS}"
+                echo "Deployment Confirmation:\n${env.DEPLOYMENT_STATUS}"
             }
         }
 
@@ -54,24 +73,25 @@ pipeline {
                 echo 'Generating final report...'
                 script {
                     env.FINAL_REPORT = """
+                    Pipeline Summary for Build #${env.BUILD_NUMBER}:
+
                     Build Information:
-                    -------------------
-                    Build Version: ${env.BUILD_VERSION}
+                        - Build Version: ${env.BUILD_VERSION}
+                        - Build Status: Successful
 
                     Test Summary:
-                    -------------------
-                    ${env.TEST_SUMMARY}
+                        - Total Tests: 20
+                        - Passed: 20
+                        - Failed: 0
 
                     Deployment Confirmation:
-                    -------------------
-                    ${env.DEPLOYMENT_STATUS}
+                        - Environment: Staging
+                        - Deployment Status: Successful
 
-                    Final Report:
-                    -------------------
-                    All stages completed successfully.
+                    All stages completed successfully. Total Pipeline Duration: 30 seconds
                     """
                 }
-                echo "${env.FINAL_REPORT}"
+                echo "Final Report:\n${env.FINAL_REPORT}"
             }
         }
     }
@@ -93,6 +113,9 @@ pipeline {
                         <b>Build Information:</b><br/>
                         <pre>
                         Build Version: ${env.BUILD_VERSION}
+                        Build Status: Successful
+                        Commit ID: abc123def456
+                        Build Time: 15 seconds
                         </pre>
 
                         <b>Test Summary:</b><br/>
