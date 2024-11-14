@@ -12,17 +12,19 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo 'Checking out the code...'
-                // Simulate Git checkout
-                sh 'echo "Simulating code checkout..."'
+                script {
+                    // Set a dummy checkout message
+                    env.CHECKOUT_MESSAGE = 'Code checked out successfully'
+                }
             }
         }
 
         stage('Build Application') {
             steps {
                 echo 'Building the application...'
-                // Simulate the build process
-                sh 'echo "Simulating application build..."'
-                env.BUILD_VERSION = '1.0.0' // Example build version
+                script {
+                    env.BUILD_VERSION = '1.0.0' // Example build version
+                }
                 echo "Build Version: ${env.BUILD_VERSION}"
             }
         }
@@ -30,9 +32,9 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
-                // Simulate testing process
-                sh 'echo "Simulating test execution..."'
-                env.TEST_SUMMARY = 'All tests passed' // Example test summary
+                script {
+                    env.TEST_SUMMARY = 'All tests passed' // Example test summary
+                }
                 echo "Test Summary: ${env.TEST_SUMMARY}"
             }
         }
@@ -40,9 +42,9 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 echo 'Deploying application...'
-                // Simulate deployment
-                sh 'echo "Simulating deployment to staging..."'
-                env.DEPLOYMENT_STATUS = 'Deployment successful to staging' // Example deployment message
+                script {
+                    env.DEPLOYMENT_STATUS = 'Deployment successful to staging' // Example deployment message
+                }
                 echo "Deployment Status: ${env.DEPLOYMENT_STATUS}"
             }
         }
@@ -50,25 +52,25 @@ pipeline {
         stage('Post-Build Report') {
             steps {
                 echo 'Generating final report...'
-                // Simulate report generation
-                sh 'echo "Simulating report generation..."'
-                env.FINAL_REPORT = """
-                Build Information:
-                -------------------
-                Build Version: ${env.BUILD_VERSION}
+                script {
+                    env.FINAL_REPORT = """
+                    Build Information:
+                    -------------------
+                    Build Version: ${env.BUILD_VERSION}
 
-                Test Summary:
-                -------------------
-                ${env.TEST_SUMMARY}
+                    Test Summary:
+                    -------------------
+                    ${env.TEST_SUMMARY}
 
-                Deployment Confirmation:
-                -------------------
-                ${env.DEPLOYMENT_STATUS}
+                    Deployment Confirmation:
+                    -------------------
+                    ${env.DEPLOYMENT_STATUS}
 
-                Final Report:
-                -------------------
-                All stages completed successfully.
-                """
+                    Final Report:
+                    -------------------
+                    All stages completed successfully.
+                    """
+                }
                 echo "${env.FINAL_REPORT}"
             }
         }
@@ -80,7 +82,7 @@ pipeline {
                 // Send email with the build summary
                 try {
                     emailext(
-                        to: '2022853154@student.uitm.edu.my',  // Replace with recipient's email
+                        to: 'your-email@example.com',  // Replace with recipient's email
                         subject: "Jenkins Build Report: ${currentBuild.fullDisplayName}",
                         body: """
                         <h2>Jenkins Build Report</h2>
