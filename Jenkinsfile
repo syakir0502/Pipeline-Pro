@@ -140,7 +140,7 @@ pipeline {
                     )
                 } catch (Exception e) {
                     echo "Failed to send email: ${e.message}"
-                    echo "aloohhhha"
+                    echo "aloohhhhhha"
                 }
             }
         }
