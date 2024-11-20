@@ -141,15 +141,11 @@ pipeline {
                 } catch (Exception e) {
                     echo "Failed to send email: ${e.message}"
                     echo "aloohhhhhha"
+            
+            
                 }
-            }
-        }
-    }
-}
-pipeline {
-    agent any
 
-    environment {
+            environment {
         // Define the Node.js version (if necessary)
         NODE_VERSION = '18'
     }
@@ -205,6 +201,7 @@ pipeline {
             // Actions on failure (e.g., notify team)
             echo 'Lint failed, fix the issues before proceeding.'
         }
+        
     }
 }
 
