@@ -102,7 +102,7 @@ pipeline {
             steps {
                 // Install npm dependencies (including HTMLHint)
                 script {
-                    sh 'npm install'
+                    sh 'npm install --save-dev htmlhint'
                 }
             }
         }
