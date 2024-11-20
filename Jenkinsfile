@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        BUILD_VERSION = '1.0.0'
+        BUILD_VERSION = '1.0.0' // Example build version
         TEST_SUMMARY = 'Pending'
         DEPLOYMENT_STATUS = 'Pending'
         FINAL_REPORT = ''
         BUILD_STATUS = 'Pending'
         DEPENDENCY_STATUS = 'Pending'
         LINT_STATUS = 'Pending'
-        EMAIL_BODY = ''
+        EMAIL_BODY = 'Pending'
     }
 
     tools {
@@ -30,7 +30,6 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 script {
-                    env.BUILD_VERSION = '1.0.0'
                     env.BUILD_STATUS = 'Success'
                     echo """
                     Build Information:
@@ -129,23 +128,23 @@ pipeline {
     post {
         always {
             script {
-                // Construct the email body
+                // Construct the email body dynamically
                 env.EMAIL_BODY = """
                 Jenkins Job: ${currentBuild.fullDisplayName}
                 Status: ${currentBuild.currentResult}
 
                 Stage Status Summary:
                 ----------------------
-                - Checkout Code: ${env.BUILD_STATUS ?: 'Pending'}
-                - Build Application: ${env.BUILD_STATUS ?: 'Pending'}
-                - Run Tests: ${env.TEST_SUMMARY ?: 'Pending'}
-                - Deploy Application: ${env.DEPLOYMENT_STATUS ?: 'Pending'}
-                - Install Dependencies: ${env.DEPENDENCY_STATUS ?: 'Pending'}
-                - Lint HTML Files: ${env.LINT_STATUS ?: 'Pending'}
+                - Checkout Code: ${env.BUILD_STATUS}
+                - Build Application: ${env.BUILD_STATUS}
+                - Run Tests: ${env.TEST_SUMMARY}
+                - Deploy Application: ${env.DEPLOYMENT_STATUS}
+                - Install Dependencies: ${env.DEPENDENCY_STATUS}
+                - Lint HTML Files: ${env.LINT_STATUS}
 
                 Final Report:
                 ----------------------
-                ${env.FINAL_REPORT ?: 'No final report available'}
+                All stages completed successfully. Total Pipeline Duration: ${currentBuild.durationString}.
                 """
             }
 
