@@ -7,6 +7,7 @@ pipeline {
         DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
         FINAL_REPORT = ''
         NODE_VERSION = '18' // Define the Node.js version (if necessary)
+        HTMLHINT_CONFIG = '.htmlhintrc'  // Path to your .htmlhintrc file (optional)
     }
 
     stages {
@@ -96,93 +97,39 @@ pipeline {
             }
         }
 
+        // Linting HTML Files
         stage('Install Dependencies') {
             steps {
+                // Install npm dependencies (including HTMLHint)
                 script {
-                    // Ensure that Node.js and npm dependencies are installed
                     sh 'npm install'
                 }
             }
         }
 
-        stage('Run Lint') {
+        stage('Lint HTML Files') {
             steps {
                 script {
-                    // Run the ESLint command to lint the project
-                    sh 'npm run lint'
+                    // Run HTMLHint to lint your HTML files
+                    // You can specify the path to your HTML files here (e.g., 'src/**/*.html')
+                    sh 'npx htmlhint "src/**/*.html"'
                 }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                // Your build steps here
-                echo 'Build steps go here'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // Your testing steps here
-                echo 'Test steps go here'
             }
         }
     }
 
     post {
         always {
-            script {
-                // Send email with the build summary
-                try {
-                    emailext(
-                        to: '2022853154@student.uitm.edu.my',  // Replace with recipient's email
-                        subject: "Jenkins Build Report: ${currentBuild.fullDisplayName}",
-                        body: """
-                        <h2>Jenkins Build Report</h2>
-                        <b>Project:</b> ${env.JOB_NAME}<br/>
-                        <b>Build Number:</b> ${env.BUILD_NUMBER}<br/>
-                        <b>Build Status:</b> ${currentBuild.currentResult}<br/><br/>
-
-                        <b>Build Information:</b><br/>
-                        <pre>
-                        Build Version: ${env.BUILD_VERSION}
-                        Build Status: Successful
-                        Commit ID: abc123def456
-                        Build Time: 15 seconds
-                        </pre>
-
-                        <b>Test Summary:</b><br/>
-                        <pre>
-                        ${env.TEST_SUMMARY}
-                        </pre>
-
-                        <b>Deployment Confirmation:</b><br/>
-                        <pre>
-                        ${env.DEPLOYMENT_STATUS}
-                        </pre>
-
-                        <b>Final Report:</b><br/>
-                        <pre>
-                        ${env.FINAL_REPORT}
-                        </pre>
-
-                        <br/>
-                        <b>Console Output:</b> <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a>
-                        """,
-                        mimeType: 'text/html'
-                    )
-                } catch (Exception e) {
-                    echo "Failed to send email: ${e.message}"
-                }
-            }
+            // Clean up or do other post-pipeline tasks
+            echo 'Linting completed.'
         }
 
         success {
-            echo 'Pipeline completed successfully.'
+            echo 'HTML linting passed.'
         }
 
         failure {
-            echo 'Pipeline failed. Check logs for errors.'
+            echo 'HTML linting failed.'
         }
     }
 }
