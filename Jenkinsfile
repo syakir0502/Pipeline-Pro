@@ -115,13 +115,16 @@ pipeline {
 
     post {
         always {
-            echo 'Linting completed.'
+            echo 'Sending email notification...'
             script {
                 emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
                          body: """
-                         Build Information:
+                         Build Summary:
                          -------------------
+
                          ${env.FINAL_REPORT}
+                         
+                         Result: ${currentBuild.currentResult}
                          """,
                          to: '2022853154@student.uitm.edu.my'
             }
