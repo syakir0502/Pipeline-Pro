@@ -134,7 +134,7 @@ pipeline {
         }
 
         failure {
-            echo 'HTML linting failed.'
+            echo 'HTML linting failedd.'
         }
     }
 }
