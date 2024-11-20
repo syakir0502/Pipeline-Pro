@@ -123,7 +123,7 @@ pipeline {
                          -------------------
                          ${env.FINAL_REPORT}
                          """,
-                         to: 'your_email@example.com'
+                         to: '2022853154@student.uitm.edu.my'
             }
         }
 
