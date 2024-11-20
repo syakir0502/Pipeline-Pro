@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     environment {
-        BUILD_VERSION = '1.0.0'
+        BUILD_VERSION = '1.0.0' // Example build version
         TEST_SUMMARY = 'Total Tests: 20\nPassed: 20\nFailed: 0\nSkipped: 0\nExecution Time: 10 seconds'
         DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
         FINAL_REPORT = ''
-        NODE_VERSION = '22' // Define the Node.js version
-        
+        NODE_VERSION = 'NodeJS-18' // Use the Node.js version configured in Jenkins
+        HTMLHINT_CONFIG = '.htmlhintrc' // Path to your .htmlhintrc file (optional)
     }
 
     tools {
-        nodejs "Node 22" // Use the Node.js tool configured in Jenkins
+        nodejs "${env.NODE_VERSION}" // Use the configured Node.js version
     }
 
     stages {
@@ -102,53 +102,39 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    sh 'npm install'
-                }
+                echo 'Installing dependencies...'
+                sh 'npm install --save-dev htmlhint'
             }
         }
 
         stage('Lint HTML Files') {
             steps {
-                script {
-                    sh 'npx htmlhint "website/**/*.html"'
-                }
+                echo 'Linting HTML files...'
+                sh 'npx htmlhint "website/**/*.html"'
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline finished, sending email notifications...'
+            echo 'Sending email notification...'
             script {
-                // Send an email notification on completion (success or failure)
-                emailext (
-                    subject: "Jenkins Build #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
-                    body: """
-                    Pipeline Summary:
-                    -----------------
-                    Build Version: ${env.BUILD_VERSION}
-                    Test Summary: ${env.TEST_SUMMARY}
-                    Deployment Status: ${env.DEPLOYMENT_STATUS}
-                    Build Result: ${currentBuild.currentResult}
-                    Check the Jenkins console for detailed output.
-                    """,
-                    to: '2022853154@student.uitm.edu.my',  // Change to your recipient's email address
-                    mimeType: 'text/html' // Use HTML email format
-                )
+                emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
+                         body: """
+                         Build Information:
+                         -------------------
+                         ${env.FINAL_REPORT}
+                         """,
+                         to: '2022853154@student.uitm.edu.my'
             }
         }
 
         success {
-            echo 'Pipeline succeeded. Sending success email...'
+            echo 'HTML linting passed.'
         }
 
         failure {
-            echo 'Pipeline failed. Sending failure email...'
-        }
-
-        unstable {
-            echo 'Pipeline is unstable. Sending unstable email...'
+            echo 'HTML linting failed.'
         }
     }
 }
