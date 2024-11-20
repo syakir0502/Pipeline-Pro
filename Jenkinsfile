@@ -1,12 +1,15 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18' // Use a Node.js 18 Docker image
+        }
+    }
 
     environment {
         BUILD_VERSION = '1.0.0' // Example build version
         TEST_SUMMARY = 'Total Tests: 20\nPassed: 20\nFailed: 0\nSkipped: 0\nExecution Time: 10 seconds'
         DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
         FINAL_REPORT = ''
-        NODE_VERSION = '18' // Define the Node.js version (if necessary)
         HTMLHINT_CONFIG = '.htmlhintrc'  // Path to your .htmlhintrc file (optional)
     }
 
@@ -98,17 +101,15 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    sh 'npm install --save-dev htmlhint'
-                }
+                echo 'Installing npm dependencies...'
+                sh 'npm install --save-dev htmlhint'
             }
         }
 
         stage('Lint HTML Files') {
             steps {
-                script {
-                    sh 'npx htmlhint "website/**/*.html"'
-                }
+                echo 'Linting HTML files...'
+                sh 'npx htmlhint "website/**/*.html"'
             }
         }
     }
@@ -119,12 +120,9 @@ pipeline {
             script {
                 emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
                          body: """
-                         Build Summary:
+                         Build Information:
                          -------------------
-
                          ${env.FINAL_REPORT}
-                         
-                         Result: ${currentBuild.currentResult}
                          """,
                          to: '2022853154@student.uitm.edu.my'
             }
