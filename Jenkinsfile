@@ -112,7 +112,7 @@ pipeline {
                 script {
                     // Run HTMLHint to lint your HTML files
                     // You can specify the path to your HTML files here (e.g., 'src/**/*.html')
-                    sh 'npx htmlhint "src/**/*.html"'
+                    sh 'npx htmlhint "website.html"'
                 }
             }
         }
