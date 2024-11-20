@@ -2,18 +2,18 @@ pipeline {
     agent any
 
     environment {
-        BUILD_VERSION = '1.0.0' // Example build version
+        BUILD_VERSION = '1.0.0'
+        BUILD_STATUS = 'Pending'
         TEST_SUMMARY = 'Pending'
         DEPLOYMENT_STATUS = 'Pending'
-        FINAL_REPORT = ''
-        BUILD_STATUS = 'Pending'
         DEPENDENCY_STATUS = 'Pending'
         LINT_STATUS = 'Pending'
+        FINAL_REPORT = 'Pending'
         EMAIL_BODY = 'Pending'
     }
 
     tools {
-        nodejs "NodeJS" // Use the Node.js version configured in Jenkins
+        nodejs "NodeJS" // Ensure NodeJS is configured in Jenkins
     }
 
     stages {
@@ -21,7 +21,14 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    env.BUILD_STATUS = 'Success'
+                    BUILD_STATUS = 'Success'
+                }
+            }
+            post {
+                failure {
+                    script {
+                        BUILD_STATUS = 'Failed'
+                    }
                 }
             }
         }
@@ -30,19 +37,13 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 script {
-                    env.BUILD_STATUS = 'Success'
-                    echo """
-                    Build Information:
-                    -------------------
-                    Build Version: ${env.BUILD_VERSION}
-                    Build Status: Successful
-                    """
+                    BUILD_STATUS = 'Success'
                 }
             }
             post {
                 failure {
                     script {
-                        env.BUILD_STATUS = 'Failed'
+                        BUILD_STATUS = 'Failed'
                     }
                 }
             }
@@ -52,7 +53,7 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    env.TEST_SUMMARY = """
+                    TEST_SUMMARY = """
                     Total Tests: 20
                     Passed: 20
                     Failed: 0
@@ -64,7 +65,7 @@ pipeline {
             post {
                 failure {
                     script {
-                        env.TEST_SUMMARY = 'Tests failed'
+                        TEST_SUMMARY = 'Tests failed'
                     }
                 }
             }
@@ -74,7 +75,7 @@ pipeline {
             steps {
                 echo 'Deploying application...'
                 script {
-                    env.DEPLOYMENT_STATUS = """
+                    DEPLOYMENT_STATUS = """
                     Environment: Staging
                     Deployment Status: Successful
                     Deployment Time: 5 seconds
@@ -84,7 +85,7 @@ pipeline {
             post {
                 failure {
                     script {
-                        env.DEPLOYMENT_STATUS = 'Deployment failed'
+                        DEPLOYMENT_STATUS = 'Deployment failed'
                     }
                 }
             }
@@ -95,13 +96,13 @@ pipeline {
                 echo 'Installing dependencies...'
                 sh 'npm install --save-dev htmlhint'
                 script {
-                    env.DEPENDENCY_STATUS = 'Success'
+                    DEPENDENCY_STATUS = 'Success'
                 }
             }
             post {
                 failure {
                     script {
-                        env.DEPENDENCY_STATUS = 'Failed'
+                        DEPENDENCY_STATUS = 'Failed'
                     }
                 }
             }
@@ -112,13 +113,13 @@ pipeline {
                 echo 'Linting HTML files...'
                 sh 'npx htmlhint "website/**/*.html"'
                 script {
-                    env.LINT_STATUS = 'Success'
+                    LINT_STATUS = 'Success'
                 }
             }
             post {
                 failure {
                     script {
-                        env.LINT_STATUS = 'Failed'
+                        LINT_STATUS = 'Failed'
                     }
                 }
             }
@@ -128,31 +129,27 @@ pipeline {
     post {
         always {
             script {
-                // Construct the email body dynamically
-                env.EMAIL_BODY = """
+                FINAL_REPORT = """
                 Jenkins Job: ${currentBuild.fullDisplayName}
                 Status: ${currentBuild.currentResult}
 
                 Stage Status Summary:
                 ----------------------
-                - Checkout Code: ${env.BUILD_STATUS}
-                - Build Application: ${env.BUILD_STATUS}
-                - Run Tests: ${env.TEST_SUMMARY}
-                - Deploy Application: ${env.DEPLOYMENT_STATUS}
-                - Install Dependencies: ${env.DEPENDENCY_STATUS}
-                - Lint HTML Files: ${env.LINT_STATUS}
-
-                Final Report:
-                ----------------------
-                All stages completed successfully. Total Pipeline Duration: ${currentBuild.durationString}.
+                - Checkout Code: ${BUILD_STATUS}
+                - Build Application: ${BUILD_STATUS}
+                - Run Tests: ${TEST_SUMMARY}
+                - Deploy Application: ${DEPLOYMENT_STATUS}
+                - Install Dependencies: ${DEPENDENCY_STATUS}
+                - Lint HTML Files: ${LINT_STATUS}
                 """
+                EMAIL_BODY = FINAL_REPORT
             }
 
-            echo "Email Body:\n${env.EMAIL_BODY}"
+            echo "Email Body:\n${EMAIL_BODY}"
 
             // Send email notification
             emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
-                     body: "${env.EMAIL_BODY}",
+                     body: "${EMAIL_BODY}",
                      to: '2022853154@student.uitm.edu.my'
         }
 
