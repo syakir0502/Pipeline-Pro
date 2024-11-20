@@ -15,7 +15,6 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    // Dummy checkout message
                     env.CHECKOUT_MESSAGE = 'Code checked out successfully'
                 }
                 echo "${env.CHECKOUT_MESSAGE}"
@@ -97,10 +96,8 @@ pipeline {
             }
         }
 
-        // Linting HTML Files
         stage('Install Dependencies') {
             steps {
-                // Install npm dependencies (including HTMLHint)
                 script {
                     sh 'npm install --save-dev htmlhint'
                 }
@@ -110,9 +107,7 @@ pipeline {
         stage('Lint HTML Files') {
             steps {
                 script {
-                    // Run HTMLHint to lint your HTML files
-                    // You can specify the path to your HTML files here (e.g., 'src/**/*.html')
-                    sh 'htmlhint "website/**/*.html"'
+                    sh 'npx htmlhint "website/**/*.html"'
                 }
             }
         }
@@ -120,8 +115,16 @@ pipeline {
 
     post {
         always {
-            // Clean up or do other post-pipeline tasks
             echo 'Linting completed.'
+            script {
+                emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
+                         body: """
+                         Build Information:
+                         -------------------
+                         ${env.FINAL_REPORT}
+                         """,
+                         to: 'your_email@example.com'
+            }
         }
 
         success {
