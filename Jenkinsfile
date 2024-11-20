@@ -6,12 +6,12 @@ pipeline {
         TEST_SUMMARY = 'Total Tests: 20\nPassed: 20\nFailed: 0\nSkipped: 0\nExecution Time: 10 seconds'
         DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
         FINAL_REPORT = ''
-        NODE_VERSION = 'NodeJS-18' // Use the Node.js version configured in Jenkins
+        NODE_VERSION = 'NodeJS' // Match the name you configured in Jenkins
         HTMLHINT_CONFIG = '.htmlhintrc' // Path to your .htmlhintrc file (optional)
     }
 
     tools {
-        nodejs "${env.NODE_VERSION}" // Use the configured Node.js version
+        nodejs "${env.NODE_VERSION}" // Use the Node.js version configured in Jenkins
     }
 
     stages {
