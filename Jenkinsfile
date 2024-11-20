@@ -186,7 +186,7 @@ pipeline {
         }
 
         failure {
-            echo 'Pipeline encountered errors.'
+            echo 'Pipeline encountered errorss.'
         }
     }
 }
