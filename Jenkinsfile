@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18' // Use a Node.js 18 Docker image
-        }
-    }
+    agent any
 
     environment {
         BUILD_VERSION = '1.0.0' // Example build version
@@ -72,44 +68,17 @@ pipeline {
             }
         }
 
-        stage('Post-Build Report') {
+        stage('Install Dependencies and Lint HTML Files') {
             steps {
-                echo 'Generating final report...'
+                echo 'Installing dependencies and linting HTML files...'
                 script {
-                    env.FINAL_REPORT = """
-                    Pipeline Summary for Build #${env.BUILD_NUMBER}:
-
-                    Build Information:
-                        - Build Version: ${env.BUILD_VERSION}
-                        - Build Status: Successful
-
-                    Test Summary:
-                        - Total Tests: 20
-                        - Passed: 20
-                        - Failed: 0
-
-                    Deployment Confirmation:
-                        - Environment: Staging
-                        - Deployment Status: Successful
-
-                    All stages completed successfully. Total Pipeline Duration: 30 seconds
-                    """
+                    sh '''
+                    docker run --rm -v $PWD:/app -w /app node:18 sh -c "
+                        npm install --save-dev htmlhint && 
+                        npx htmlhint website/**/*.html
+                    "
+                    '''
                 }
-                echo "Final Report:\n${env.FINAL_REPORT}"
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing npm dependencies...'
-                sh 'npm install --save-dev htmlhint'
-            }
-        }
-
-        stage('Lint HTML Files') {
-            steps {
-                echo 'Linting HTML files...'
-                sh 'npx htmlhint "website/**/*.html"'
             }
         }
     }
