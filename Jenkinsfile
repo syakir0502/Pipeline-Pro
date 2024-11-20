@@ -3,11 +3,12 @@ pipeline {
 
     environment {
         BUILD_VERSION = '1.0.0' // Example build version
-        TEST_SUMMARY = 'Total Tests: 20\nPassed: 20\nFailed: 0\nSkipped: 0\nExecution Time: 10 seconds'
-        DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
+        TEST_SUMMARY = ''
+        DEPLOYMENT_STATUS = ''
         FINAL_REPORT = ''
         NODE_VERSION = 'NodeJS' // Match the name you configured in Jenkins
         HTMLHINT_CONFIG = '.htmlhintrc' // Path to your .htmlhintrc file (optional)
+        EMAIL_BODY = '' // To store the dynamic email content
     }
 
     tools {
@@ -19,9 +20,15 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    env.CHECKOUT_MESSAGE = 'Code checked out successfully'
+                    try {
+                        env.CHECKOUT_MESSAGE = 'Code checked out successfully'
+                        echo "${env.CHECKOUT_MESSAGE}"
+                    } catch (Exception e) {
+                        env.CHECKOUT_MESSAGE = "Checkout failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
                 }
-                echo "${env.CHECKOUT_MESSAGE}"
             }
         }
 
@@ -29,15 +36,21 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 script {
-                    env.BUILD_VERSION = '1.0.0'
-                    echo """
-                    Build Information:
-                    -------------------
-                    Build Version: ${env.BUILD_VERSION}
-                    Build Status: Successful
-                    Commit ID: abc123def456
-                    Build Time: 15 seconds
-                    """
+                    try {
+                        env.BUILD_VERSION = '1.0.0'
+                        echo """
+                        Build Information:
+                        -------------------
+                        Build Version: ${env.BUILD_VERSION}
+                        Build Status: Successful
+                        Commit ID: abc123def456
+                        Build Time: 15 seconds
+                        """
+                    } catch (Exception e) {
+                        env.BUILD_VERSION = "Build failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
                 }
             }
         }
@@ -46,15 +59,21 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    env.TEST_SUMMARY = """
-                    Total Tests: 20
-                    Passed: 20
-                    Failed: 0
-                    Skipped: 0
-                    Execution Time: 10 seconds
-                    """
+                    try {
+                        env.TEST_SUMMARY = """
+                        Total Tests: 20
+                        Passed: 20
+                        Failed: 0
+                        Skipped: 0
+                        Execution Time: 10 seconds
+                        """
+                        echo "Test Summary:\n${env.TEST_SUMMARY}"
+                    } catch (Exception e) {
+                        env.TEST_SUMMARY = "Tests failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
                 }
-                echo "Test Summary:\n${env.TEST_SUMMARY}"
             }
         }
 
@@ -62,14 +81,20 @@ pipeline {
             steps {
                 echo 'Deploying application...'
                 script {
-                    env.DEPLOYMENT_STATUS = """
-                    Environment: Staging
-                    Deployment Status: Successful
-                    Deployment Time: 5 seconds
-                    Deployed By: Jenkins Pipeline
-                    """
+                    try {
+                        env.DEPLOYMENT_STATUS = """
+                        Environment: Staging
+                        Deployment Status: Successful
+                        Deployment Time: 5 seconds
+                        Deployed By: Jenkins Pipeline
+                        """
+                        echo "Deployment Confirmation:\n${env.DEPLOYMENT_STATUS}"
+                    } catch (Exception e) {
+                        env.DEPLOYMENT_STATUS = "Deployment failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
                 }
-                echo "Deployment Confirmation:\n${env.DEPLOYMENT_STATUS}"
             }
         }
 
@@ -82,59 +107,86 @@ pipeline {
 
                     Build Information:
                         - Build Version: ${env.BUILD_VERSION}
-                        - Build Status: Successful
 
                     Test Summary:
-                        - Total Tests: 20
-                        - Passed: 20
-                        - Failed: 0
+                        - ${env.TEST_SUMMARY}
 
                     Deployment Confirmation:
-                        - Environment: Staging
-                        - Deployment Status: Successful
-
-                    All stages completed successfully. Total Pipeline Duration: 30 seconds
+                        - ${env.DEPLOYMENT_STATUS}
                     """
+                    echo "Final Report:\n${env.FINAL_REPORT}"
                 }
-                echo "Final Report:\n${env.FINAL_REPORT}"
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install --save-dev htmlhint'
+                script {
+                    try {
+                        sh 'npm install --save-dev htmlhint'
+                        env.DEPENDENCY_STATUS = 'Dependencies installed successfully'
+                    } catch (Exception e) {
+                        env.DEPENDENCY_STATUS = "Dependency installation failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
+                }
             }
         }
 
         stage('Lint HTML Files') {
             steps {
                 echo 'Linting HTML files...'
-                sh 'npx htmlhint "website/**/*.html"'
+                script {
+                    try {
+                        sh 'npx htmlhint "website/**/*.html"'
+                        env.LINT_STATUS = 'Linting passed successfully'
+                    } catch (Exception e) {
+                        env.LINT_STATUS = "Linting failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            echo 'Sending email notification...'
             script {
-                emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
-                         body: """
-                         Build Information:
-                         -------------------
-                         ${env.FINAL_REPORT}
-                         """,
-                         to: '2022853154@student.uitm.edu.my'
+                // Build the dynamic email body
+                env.EMAIL_BODY = """
+                Jenkins Job: ${currentBuild.fullDisplayName}
+                Status: ${currentBuild.currentResult}
+
+                Pipeline Details:
+                ------------------
+                - Checkout Code: ${env.CHECKOUT_MESSAGE}
+                - Build Application: ${env.BUILD_VERSION}
+                - Run Tests: ${env.TEST_SUMMARY}
+                - Deploy Application: ${env.DEPLOYMENT_STATUS}
+                - Install Dependencies: ${env.DEPENDENCY_STATUS}
+                - Lint HTML Files: ${env.LINT_STATUS}
+
+                Final Report:
+                ------------------
+                ${env.FINAL_REPORT}
+                """
             }
+
+            echo 'Sending email notification...'
+            emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
+                     body: "${env.EMAIL_BODY}",
+                     to: '2022853154@student.uitm.edu.my'
         }
 
         success {
-            echo 'HTML linting passed.'
+            echo 'Pipeline completed successfully.'
         }
 
         failure {
-            echo 'HTML linting failedd.'
+            echo 'Pipeline encountered errors.'
         }
     }
 }
