@@ -6,6 +6,7 @@ pipeline {
         TEST_SUMMARY = 'Total Tests: 20\nPassed: 20\nFailed: 0\nSkipped: 0\nExecution Time: 10 seconds'
         DEPLOYMENT_STATUS = 'Environment: Staging\nDeployment Status: Successful\nDeployment Time: 5 seconds\nDeployed By: Jenkins Pipeline'
         FINAL_REPORT = ''
+        NODE_VERSION = '18' // Define the Node.js version (if necessary)
     }
 
     stages {
@@ -94,6 +95,38 @@ pipeline {
                 echo "Final Report:\n${env.FINAL_REPORT}"
             }
         }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Ensure that Node.js and npm dependencies are installed
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Run Lint') {
+            steps {
+                script {
+                    // Run the ESLint command to lint the project
+                    sh 'npm run lint'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Your build steps here
+                echo 'Build steps go here'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Your testing steps here
+                echo 'Test steps go here'
+            }
+        }
     }
 
     post {
@@ -140,68 +173,16 @@ pipeline {
                     )
                 } catch (Exception e) {
                     echo "Failed to send email: ${e.message}"
-                    echo "aloohhhhhha"
-            
-            
-                }
-
-            environment {
-        // Define the Node.js version (if necessary)
-        NODE_VERSION = '18'
-    }
-
-    stages {
-        stage('Install Dependencies') {
-            steps {
-                // Ensure that Node.js and npm dependencies are installed
-                script {
-                    // If Node.js is not installed globally on Jenkins, use the node tool configured in Jenkins
-                    sh 'npm install'
                 }
             }
-        }
-
-        stage('Run Lint') {
-            steps {
-                // Run the ESLint command to lint the project
-                script {
-                    // This assumes you have a 'lint' script defined in package.json
-                    sh 'npm run lint'
-                }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                // Your build steps here
-                echo 'Build steps go here'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // Your testing steps here
-                echo 'Test steps go here'
-            }
-        }
-    }
-
-    post {
-        always {
-            // Always clean up after the build
-            echo 'Cleaning up...'
         }
 
         success {
-            // Actions on success (e.g., deploy to production)
-            echo 'Lint passed, proceed with deployment.'
+            echo 'Pipeline completed successfully.'
         }
 
         failure {
-            // Actions on failure (e.g., notify team)
-            echo 'Lint failed, fix the issues before proceeding.'
+            echo 'Pipeline failed. Check logs for errors.'
         }
-        
     }
 }
-
