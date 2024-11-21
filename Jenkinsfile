@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        BUILD_VERSION = '1.0.0'
         CHECKOUT_STATUS = 'Pending'
         BUILD_STATUS = 'Pending'
         TEST_STATUS = 'Pending'
@@ -10,11 +9,15 @@ pipeline {
         DEPENDENCY_STATUS = 'Pending'
         LINT_STATUS = 'Pending'
         FINAL_REPORT = ''
-        EMAIL_BODY = ''
     }
 
     tools {
         nodejs "NodeJS" // Ensure NodeJS is configured in Jenkins
+    }
+
+    options {
+        // Continue executing stages even if a stage fails
+        skipStagesAfterUnstable()
     }
 
     stages {
@@ -22,7 +25,8 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    error('Simulated failure in Checkout Code') // Simulate failure
+                    // Simulate a failure
+                    error('Simulated failure in Checkout Code')
                 }
             }
             post {
@@ -43,7 +47,7 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 script {
-                    BUILD_STATUS = 'Success' // Simulate success
+                    BUILD_STATUS = 'Success'
                 }
             }
             post {
@@ -64,7 +68,19 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    TEST_STATUS = 'Pending' // Intentionally leave as pending
+                    TEST_STATUS = 'Success'
+                }
+            }
+            post {
+                success {
+                    script {
+                        TEST_STATUS = 'Success'
+                    }
+                }
+                failure {
+                    script {
+                        TEST_STATUS = 'Failed'
+                    }
                 }
             }
         }
@@ -73,17 +89,13 @@ pipeline {
             steps {
                 echo 'Deploying application...'
                 script {
-                    DEPLOYMENT_STATUS = """
-                    Environment: Staging
-                    Deployment Status: Successful
-                    Deployment Time: 5 seconds
-                    """
+                    DEPLOYMENT_STATUS = 'Success'
                 }
             }
             post {
                 success {
                     script {
-                        DEPLOYMENT_STATUS = 'Successful'
+                        DEPLOYMENT_STATUS = 'Success'
                     }
                 }
                 failure {
@@ -120,7 +132,8 @@ pipeline {
             steps {
                 echo 'Linting HTML files...'
                 script {
-                    error('Simulated failure in Lint HTML Files') // Simulate failure
+                    // Simulate a failure
+                    error('Simulated failure in Lint HTML Files')
                 }
             }
             post {
@@ -154,23 +167,14 @@ pipeline {
                 - Install Dependencies: ${DEPENDENCY_STATUS}
                 - Lint HTML Files: ${LINT_STATUS}
                 """
-                EMAIL_BODY = FINAL_REPORT
             }
 
-            echo "Email Body:\n${EMAIL_BODY}"
+            echo "Final Report:\n${FINAL_REPORT}"
 
             // Ensure email gets sent
             emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
-                     body: "${EMAIL_BODY}",
+                     body: "${FINAL_REPORT}",
                      to: '2022853154@student.uitm.edu.my'
-        }
-
-        success {
-            echo 'Pipeline completed successfully.'
-        }
-
-        failure {
-            echo 'Pipeline encountered errors.'
         }
     }
 }
