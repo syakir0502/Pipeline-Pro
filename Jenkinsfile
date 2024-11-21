@@ -3,13 +3,7 @@ pipeline {
 
     environment {
         BUILD_VERSION = '1.0.0'
-        BUILD_STATUS = 'Pending'
-        TEST_SUMMARY = 'Pending'
-        DEPLOYMENT_STATUS = 'Pending'
-        DEPENDENCY_STATUS = 'Pending'
-        LINT_STATUS = 'Pending'
-        FINAL_REPORT = 'Pending'
-        EMAIL_BODY = 'Pending'
+        STAGE_SUMMARY = ''
     }
 
     tools {
@@ -21,7 +15,21 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    BUILD_STATUS = 'Success'
+                    currentBuild.description = "Checkout: Success"
+                }
+            }
+            post {
+                success {
+                    script {
+                        currentBuild.description = "Checkout Code: Success"
+                        STAGE_SUMMARY += '- Checkout Code: Success\n'
+                    }
+                }
+                failure {
+                    script {
+                        currentBuild.description = "Checkout Code: Failed"
+                        STAGE_SUMMARY += '- Checkout Code: Failed\n'
+                    }
                 }
             }
         }
@@ -30,62 +38,95 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 script {
-                    BUILD_STATUS = 'Failed' // Simulate a build failure
-                    error('Build process failed!') // Trigger stage failure
+                    error('Simulating Build Failure') // Intentional failure
+                }
+            }
+            post {
+                success {
+                    script {
+                        STAGE_SUMMARY += '- Build Application: Success\n'
+                    }
+                }
+                failure {
+                    script {
+                        STAGE_SUMMARY += '- Build Application: Failed\n'
+                    }
                 }
             }
         }
 
         stage('Run Tests') {
+            when {
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
             steps {
                 echo 'Running tests...'
                 script {
-                    TEST_SUMMARY = """
-                    Total Tests: 20
-                    Passed: 18
-                    Failed: 2
-                    Skipped: 0
-                    Execution Time: 10 seconds
+                    STAGE_SUMMARY += """
+                    - Run Tests: Success
+                        Total Tests: 20
+                        Passed: 18
+                        Failed: 2
                     """
+                }
+            }
+            post {
+                success {
+                    script {
+                        STAGE_SUMMARY += '- Run Tests: Success\n'
+                    }
+                }
+                failure {
+                    script {
+                        STAGE_SUMMARY += '- Run Tests: Failed\n'
+                    }
                 }
             }
         }
 
         stage('Deploy Application') {
+            when {
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
             steps {
                 echo 'Deploying application...'
                 script {
-                    DEPLOYMENT_STATUS = """
-                    Environment: Staging
-                    Deployment Status: Successful
-                    Deployment Time: 5 seconds
-                    """
+                    STAGE_SUMMARY += '- Deploy Application: Success\n'
                 }
             }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing dependencies...'
-                script {
-                    DEPENDENCY_STATUS = 'Failed' // Simulate a dependency installation failure
-                    error('Dependency installation failed!') // Trigger stage failure
+            post {
+                success {
+                    script {
+                        STAGE_SUMMARY += '- Deploy Application: Success\n'
+                    }
+                }
+                failure {
+                    script {
+                        STAGE_SUMMARY += '- Deploy Application: Failed\n'
+                    }
                 }
             }
         }
 
         stage('Lint HTML Files') {
+            when {
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
             steps {
                 echo 'Linting HTML files...'
-                sh 'npx htmlhint "website/**/*.html"' // Assuming this will fail if the files have issues
                 script {
-                    LINT_STATUS = 'Success'
+                    sh 'npx htmlhint "website/**/*.html"' // Simulating success
                 }
             }
             post {
+                success {
+                    script {
+                        STAGE_SUMMARY += '- Lint HTML Files: Success\n'
+                    }
+                }
                 failure {
                     script {
-                        LINT_STATUS = 'Failed'
+                        STAGE_SUMMARY += '- Lint HTML Files: Failed\n'
                     }
                 }
             }
@@ -95,28 +136,21 @@ pipeline {
     post {
         always {
             script {
-                FINAL_REPORT = """
+                def emailBody = """
                 Jenkins Job: ${currentBuild.fullDisplayName}
                 Status: ${currentBuild.currentResult}
 
                 Stage Status Summary:
                 ----------------------
-                - Checkout Code: ${BUILD_STATUS}
-                - Build Application: ${BUILD_STATUS}
-                - Run Tests: ${TEST_SUMMARY}
-                - Deploy Application: ${DEPLOYMENT_STATUS}
-                - Install Dependencies: ${DEPENDENCY_STATUS}
-                - Lint HTML Files: ${LINT_STATUS}
+                ${STAGE_SUMMARY}
                 """
-                EMAIL_BODY = FINAL_REPORT
+                echo "Email Body:\n${emailBody}"
+
+                // Send email
+                emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
+                         body: emailBody,
+                         to: '2022853154@student.uitm.edu.my'
             }
-
-            echo "Email Body:\n${EMAIL_BODY}"
-
-            // Send email notification
-            emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
-                     body: "${EMAIL_BODY}",
-                     to: '2022853154@student.uitm.edu.my'
         }
 
         success {
