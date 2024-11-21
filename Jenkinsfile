@@ -24,27 +24,14 @@ pipeline {
                     BUILD_STATUS = 'Success'
                 }
             }
-            post {
-                failure {
-                    script {
-                        BUILD_STATUS = 'Failed'
-                    }
-                }
-            }
         }
 
         stage('Build Application') {
             steps {
                 echo 'Building the application...'
                 script {
-                    BUILD_STATUS = 'Success'
-                }
-            }
-            post {
-                failure {
-                    script {
-                        BUILD_STATUS = 'Failed'
-                    }
+                    BUILD_STATUS = 'Failed' // Simulate a build failure
+                    error('Build process failed!') // Trigger stage failure
                 }
             }
         }
@@ -55,18 +42,11 @@ pipeline {
                 script {
                     TEST_SUMMARY = """
                     Total Tests: 20
-                    Passed: 20
-                    Failed: 0
+                    Passed: 18
+                    Failed: 2
                     Skipped: 0
                     Execution Time: 10 seconds
                     """
-                }
-            }
-            post {
-                failure {
-                    script {
-                        TEST_SUMMARY = 'Tests failed'
-                    }
                 }
             }
         }
@@ -82,28 +62,14 @@ pipeline {
                     """
                 }
             }
-            post {
-                failure {
-                    script {
-                        DEPLOYMENT_STATUS = 'Deployment failed'
-                    }
-                }
-            }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install --save-dev htmlhint'
                 script {
-                    DEPENDENCY_STATUS = 'Success'
-                }
-            }
-            post {
-                failure {
-                    script {
-                        DEPENDENCY_STATUS = 'Failed'
-                    }
+                    DEPENDENCY_STATUS = 'Failed' // Simulate a dependency installation failure
+                    error('Dependency installation failed!') // Trigger stage failure
                 }
             }
         }
@@ -111,7 +77,7 @@ pipeline {
         stage('Lint HTML Files') {
             steps {
                 echo 'Linting HTML files...'
-                sh 'npx htmlhint "website/**/*.html"'
+                sh 'npx htmlhint "website/**/*.html"' // Assuming this will fail if the files have issues
                 script {
                     LINT_STATUS = 'Success'
                 }
