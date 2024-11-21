@@ -3,8 +3,9 @@ pipeline {
 
     environment {
         BUILD_VERSION = '1.0.0'
+        CHECKOUT_STATUS = 'Pending'
         BUILD_STATUS = 'Pending'
-        TEST_SUMMARY = 'Pending'
+        TEST_STATUS = 'Pending'
         DEPLOYMENT_STATUS = 'Pending'
         DEPENDENCY_STATUS = 'Pending'
         LINT_STATUS = 'Pending'
@@ -13,7 +14,7 @@ pipeline {
     }
 
     tools {
-        nodejs "NodeJS" // Ensure NodeJS is configured in Jenkins
+        nodejs "NodeJS" // Make sure NodeJS is configured in Jenkins under "Manage Jenkins" > "Global Tool Configuration"
     }
 
     stages {
@@ -21,13 +22,13 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    error('Simulating failure in Checkout Code') // Simulate failure
+                    error('Simulated failure in Checkout Code') // Simulate failure
                 }
             }
             post {
                 failure {
                     script {
-                        BUILD_STATUS = 'Failed'
+                        CHECKOUT_STATUS = 'Failed'
                     }
                 }
             }
@@ -37,7 +38,7 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 script {
-                    BUILD_STATUS = 'Success'
+                    BUILD_STATUS = 'Success' // Simulate success
                 }
             }
         }
@@ -46,7 +47,7 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    // Simulating pending by not setting TEST_SUMMARY
+                    // Intentionally leave TEST_STATUS as Pending
                 }
             }
         }
@@ -74,7 +75,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install --save-dev htmlhint' // Simulate a success here
+                sh 'npm install --save-dev htmlhint' // Simulate a successful step
                 script {
                     DEPENDENCY_STATUS = 'Success'
                 }
@@ -92,7 +93,7 @@ pipeline {
             steps {
                 echo 'Linting HTML files...'
                 script {
-                    error('Simulating failure in Lint HTML Files') // Simulate failure
+                    error('Simulated failure in Lint HTML Files') // Simulate failure
                 }
             }
             post {
@@ -114,9 +115,9 @@ pipeline {
 
                 Stage Status Summary:
                 ----------------------
-                - Checkout Code: ${BUILD_STATUS}
+                - Checkout Code: ${CHECKOUT_STATUS}
                 - Build Application: ${BUILD_STATUS}
-                - Run Tests: ${TEST_SUMMARY}
+                - Run Tests: ${TEST_STATUS}
                 - Deploy Application: ${DEPLOYMENT_STATUS}
                 - Install Dependencies: ${DEPENDENCY_STATUS}
                 - Lint HTML Files: ${LINT_STATUS}
@@ -126,7 +127,7 @@ pipeline {
 
             echo "Email Body:\n${EMAIL_BODY}"
 
-            // Send email notification
+            // Ensure email gets sent
             emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
                      body: "${EMAIL_BODY}",
                      to: '2022853154@student.uitm.edu.my'
