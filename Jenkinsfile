@@ -9,12 +9,12 @@ pipeline {
         DEPLOYMENT_STATUS = 'Pending'
         DEPENDENCY_STATUS = 'Pending'
         LINT_STATUS = 'Pending'
-        FINAL_REPORT = 'Pending'
-        EMAIL_BODY = 'Pending'
+        FINAL_REPORT = ''
+        EMAIL_BODY = ''
     }
 
     tools {
-        nodejs "NodeJS" // Make sure NodeJS is configured in Jenkins under "Manage Jenkins" > "Global Tool Configuration"
+        nodejs "NodeJS" // Ensure NodeJS is configured in Jenkins
     }
 
     stages {
@@ -26,6 +26,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        CHECKOUT_STATUS = 'Success'
+                    }
+                }
                 failure {
                     script {
                         CHECKOUT_STATUS = 'Failed'
@@ -41,13 +46,25 @@ pipeline {
                     BUILD_STATUS = 'Success' // Simulate success
                 }
             }
+            post {
+                success {
+                    script {
+                        BUILD_STATUS = 'Success'
+                    }
+                }
+                failure {
+                    script {
+                        BUILD_STATUS = 'Failed'
+                    }
+                }
+            }
         }
 
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
                 script {
-                    // Intentionally leave TEST_STATUS as Pending
+                    TEST_STATUS = 'Pending' // Intentionally leave as pending
                 }
             }
         }
@@ -64,9 +81,14 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        DEPLOYMENT_STATUS = 'Successful'
+                    }
+                }
                 failure {
                     script {
-                        DEPLOYMENT_STATUS = 'Deployment failed'
+                        DEPLOYMENT_STATUS = 'Failed'
                     }
                 }
             }
@@ -75,12 +97,17 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install --save-dev htmlhint' // Simulate a successful step
+                sh 'npm install --save-dev htmlhint'
                 script {
                     DEPENDENCY_STATUS = 'Success'
                 }
             }
             post {
+                success {
+                    script {
+                        DEPENDENCY_STATUS = 'Success'
+                    }
+                }
                 failure {
                     script {
                         DEPENDENCY_STATUS = 'Failed'
@@ -97,6 +124,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        LINT_STATUS = 'Success'
+                    }
+                }
                 failure {
                     script {
                         LINT_STATUS = 'Failed'
