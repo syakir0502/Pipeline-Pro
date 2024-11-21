@@ -21,7 +21,7 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    BUILD_STATUS = 'Success'
+                    error('Simulating failure in Checkout Code') // Simulate failure
                 }
             }
             post {
@@ -40,33 +40,13 @@ pipeline {
                     BUILD_STATUS = 'Success'
                 }
             }
-            post {
-                failure {
-                    script {
-                        BUILD_STATUS = 'Failed'
-                    }
-                }
-            }
         }
 
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
                 script {
-                    TEST_SUMMARY = """
-                    Total Tests: 20
-                    Passed: 20
-                    Failed: 0
-                    Skipped: 0
-                    Execution Time: 10 seconds
-                    """
-                }
-            }
-            post {
-                failure {
-                    script {
-                        TEST_SUMMARY = 'Tests failed'
-                    }
+                    // Simulating pending by not setting TEST_SUMMARY
                 }
             }
         }
@@ -94,7 +74,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install --save-dev htmlhint'
+                sh 'npm install --save-dev htmlhint' // Simulate a success here
                 script {
                     DEPENDENCY_STATUS = 'Success'
                 }
@@ -111,9 +91,8 @@ pipeline {
         stage('Lint HTML Files') {
             steps {
                 echo 'Linting HTML files...'
-                sh 'npx htmlhint "website/**/*.html"'
                 script {
-                    LINT_STATUS = 'Success'
+                    error('Simulating failure in Lint HTML Files') // Simulate failure
                 }
             }
             post {
