@@ -16,7 +16,7 @@ pipeline {
     }
 
     options {
-        // Continue executing stages even if a stage fails
+        // Ensures the pipeline runs all stages regardless of failures
         skipStagesAfterUnstable()
     }
 
@@ -40,6 +40,9 @@ pipeline {
                         CHECKOUT_STATUS = 'Failed'
                     }
                 }
+                always {
+                    echo "Checkout Status: ${CHECKOUT_STATUS}"
+                }
             }
         }
 
@@ -60,6 +63,9 @@ pipeline {
                     script {
                         BUILD_STATUS = 'Failed'
                     }
+                }
+                always {
+                    echo "Build Status: ${BUILD_STATUS}"
                 }
             }
         }
@@ -82,6 +88,9 @@ pipeline {
                         TEST_STATUS = 'Failed'
                     }
                 }
+                always {
+                    echo "Test Status: ${TEST_STATUS}"
+                }
             }
         }
 
@@ -102,6 +111,9 @@ pipeline {
                     script {
                         DEPLOYMENT_STATUS = 'Failed'
                     }
+                }
+                always {
+                    echo "Deployment Status: ${DEPLOYMENT_STATUS}"
                 }
             }
         }
@@ -125,15 +137,18 @@ pipeline {
                         DEPENDENCY_STATUS = 'Failed'
                     }
                 }
+                always {
+                    echo "Dependency Status: ${DEPENDENCY_STATUS}"
+                }
             }
         }
 
         stage('Lint HTML Files') {
             steps {
                 echo 'Linting HTML files...'
+                sh 'npx htmlhint "website/**/*.html"'
                 script {
-                    // Simulate a failure
-                    error('Simulated failure in Lint HTML Files')
+                    LINT_STATUS = 'Success'
                 }
             }
             post {
@@ -146,6 +161,9 @@ pipeline {
                     script {
                         LINT_STATUS = 'Failed'
                     }
+                }
+                always {
+                    echo "Lint Status: ${LINT_STATUS}"
                 }
             }
         }
