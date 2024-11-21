@@ -15,20 +15,14 @@ pipeline {
             steps {
                 echo 'Checking out the code...'
                 script {
-                    currentBuild.description = "Checkout: Success"
+                    STAGE_SUMMARY += '- Checkout Code: Success\n'
                 }
             }
             post {
-                success {
-                    script {
-                        currentBuild.description = "Checkout Code: Success"
-                        STAGE_SUMMARY += '- Checkout Code: Success\n'
-                    }
-                }
                 failure {
                     script {
-                        currentBuild.description = "Checkout Code: Failed"
                         STAGE_SUMMARY += '- Checkout Code: Failed\n'
+                        error('Stopping pipeline at Checkout Code')
                     }
                 }
             }
@@ -50,44 +44,30 @@ pipeline {
                 failure {
                     script {
                         STAGE_SUMMARY += '- Build Application: Failed\n'
+                        error('Stopping pipeline at Build Application')
                     }
                 }
             }
         }
 
         stage('Run Tests') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
             steps {
                 echo 'Running tests...'
                 script {
-                    STAGE_SUMMARY += """
-                    - Run Tests: Success
-                        Total Tests: 20
-                        Passed: 18
-                        Failed: 2
-                    """
+                    STAGE_SUMMARY += '- Run Tests: Success\n'
                 }
             }
             post {
-                success {
-                    script {
-                        STAGE_SUMMARY += '- Run Tests: Success\n'
-                    }
-                }
                 failure {
                     script {
                         STAGE_SUMMARY += '- Run Tests: Failed\n'
+                        error('Stopping pipeline at Run Tests')
                     }
                 }
             }
         }
 
         stage('Deploy Application') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
             steps {
                 echo 'Deploying application...'
                 script {
@@ -95,38 +75,27 @@ pipeline {
                 }
             }
             post {
-                success {
-                    script {
-                        STAGE_SUMMARY += '- Deploy Application: Success\n'
-                    }
-                }
                 failure {
                     script {
                         STAGE_SUMMARY += '- Deploy Application: Failed\n'
+                        error('Stopping pipeline at Deploy Application')
                     }
                 }
             }
         }
 
         stage('Lint HTML Files') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
             steps {
                 echo 'Linting HTML files...'
                 script {
-                    sh 'npx htmlhint "website/**/*.html"' // Simulating success
+                    STAGE_SUMMARY += '- Lint HTML Files: Success\n'
                 }
             }
             post {
-                success {
-                    script {
-                        STAGE_SUMMARY += '- Lint HTML Files: Success\n'
-                    }
-                }
                 failure {
                     script {
                         STAGE_SUMMARY += '- Lint HTML Files: Failed\n'
+                        error('Stopping pipeline at Lint HTML Files')
                     }
                 }
             }
