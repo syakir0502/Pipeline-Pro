@@ -49,57 +49,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Run Tests') {
-            steps {
-                echo 'Running tests...'
-                script {
-                    STAGE_SUMMARY += '- Run Tests: Success\n'
-                }
-            }
-            post {
-                failure {
-                    script {
-                        STAGE_SUMMARY += '- Run Tests: Failed\n'
-                        error('Stopping pipeline at Run Tests')
-                    }
-                }
-            }
-        }
-
-        stage('Deploy Application') {
-            steps {
-                echo 'Deploying application...'
-                script {
-                    STAGE_SUMMARY += '- Deploy Application: Success\n'
-                }
-            }
-            post {
-                failure {
-                    script {
-                        STAGE_SUMMARY += '- Deploy Application: Failed\n'
-                        error('Stopping pipeline at Deploy Application')
-                    }
-                }
-            }
-        }
-
-        stage('Lint HTML Files') {
-            steps {
-                echo 'Linting HTML files...'
-                script {
-                    STAGE_SUMMARY += '- Lint HTML Files: Success\n'
-                }
-            }
-            post {
-                failure {
-                    script {
-                        STAGE_SUMMARY += '- Lint HTML Files: Failed\n'
-                        error('Stopping pipeline at Lint HTML Files')
-                    }
-                }
-            }
-        }
     }
 
     post {
@@ -115,10 +64,14 @@ pipeline {
                 """
                 echo "Email Body:\n${emailBody}"
 
-                // Send email
-                emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
-                         body: emailBody,
-                         to: '2022853154@student.uitm.edu.my'
+                try {
+                    // Send email
+                    emailext subject: "Jenkins Job: ${currentBuild.fullDisplayName} - Status: ${currentBuild.currentResult}",
+                             body: emailBody,
+                             to: '2022853154@student.uitm.edu.my'
+                } catch (Exception e) {
+                    echo "Error while sending email: ${e.message}"
+                }
             }
         }
 
